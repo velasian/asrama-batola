@@ -1,5 +1,6 @@
 <script setup>
-import { onMounted, onUnmounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref, watch } from 'vue'
+import IconGraphic from './IconGraphic.vue'
 
 const isScrolled = ref(false)
 const isMobileMenuOpen = ref(false)
@@ -7,8 +8,20 @@ const isDropdownOpen = ref(false)
 
 const handleScroll = () => {
   isScrolled.value = window.scrollY > 50
-  if (isDropdownOpen.value) {
+  if (isDropdownOpen.value && !isMobileMenuOpen.value) {
     isDropdownOpen.value = false
+  }
+}
+
+const handleResize = () => {
+  if (window.innerWidth > 900) {
+    closeMobileMenu()
+  }
+}
+
+const handleKeydown = (event) => {
+  if (event.key === 'Escape') {
+    closeMobileMenu()
   }
 }
 
@@ -27,37 +40,67 @@ const toggleDropdown = (e) => {
 }
 
 onMounted(() => {
-  window.addEventListener('scroll', handleScroll)
+  handleScroll()
+  window.addEventListener('scroll', handleScroll, { passive: true })
+  window.addEventListener('resize', handleResize)
+  document.addEventListener('keydown', handleKeydown)
 })
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
+  window.removeEventListener('resize', handleResize)
+  document.removeEventListener('keydown', handleKeydown)
+  document.body.classList.remove('nav-locked')
+})
+
+watch(isMobileMenuOpen, (isOpen) => {
+  document.body.classList.toggle('nav-locked', isOpen)
 })
 </script>
 
 <template>
-  <header :class="['navbar', { 'navbar-scrolled': isScrolled }]">
+  <header :class="['navbar', { 'navbar-scrolled': isScrolled, 'navbar-menu-open': isMobileMenuOpen }]">
     <div class="logo-box">
-      <img src="../assets/images/logo_asrama.jpg" class="logo-img" alt="Logo Asrama" @error="$event.target.src='https://placehold.co/100x100/004aad/white?text=Asrama'" />
+      <img
+        src="../assets/images/logo_asrama.jpg"
+        class="logo-img"
+        alt="Logo Asrama"
+        width="45"
+        height="45"
+        decoding="async"
+        @error="$event.target.src='https://placehold.co/100x100/004aad/white?text=Asrama'"
+      />
       <span class="logo-text">Asrama Putra Handil Bakti</span>
     </div>
 
-    <button class="hamburger" @click="toggleMobileMenu" aria-label="Menu">
+    <button
+      class="hamburger"
+      type="button"
+      @click="toggleMobileMenu"
+      aria-label="Menu navigasi"
+      aria-controls="main-navigation"
+      :aria-expanded="isMobileMenuOpen"
+    >
       <span :class="['bar', { 'bar-open-1': isMobileMenuOpen }]"></span>
       <span :class="['bar', { 'bar-open-2': isMobileMenuOpen }]"></span>
       <span :class="['bar', { 'bar-open-3': isMobileMenuOpen }]"></span>
     </button>
 
-    <nav :class="['nav-links', { 'nav-open': isMobileMenuOpen }]">
+    <nav id="main-navigation" :class="['nav-links', { 'nav-open': isMobileMenuOpen }]" aria-label="Navigasi utama">
       <a href="#beranda" @click="closeMobileMenu">Beranda</a>
       <a href="#galeri" @click="closeMobileMenu">Galeri</a>
       
-      <!-- Dropdown Menu -->
       <div :class="['dropdown', { 'dropdown-active': isDropdownOpen }]" @mouseenter="isDropdownOpen = true" @mouseleave="isDropdownOpen = false">
-        <a href="#" class="dropdown-toggle" @click.prevent="toggleDropdown">
-          Tentang <span class="caret">▼</span>
-        </a>
-        <div class="dropdown-menu">
+        <button
+          type="button"
+          class="dropdown-toggle"
+          @click="toggleDropdown"
+          aria-controls="about-submenu"
+          :aria-expanded="isDropdownOpen"
+        >
+          Tentang <span class="caret"><IconGraphic name="chevron-down" /></span>
+        </button>
+        <div id="about-submenu" class="dropdown-menu">
           <a href="#pengurus" @click="closeMobileMenu">Pengurus</a>
           <a href="#fasilitas" @click="closeMobileMenu">Fasilitas</a>
           <a href="#aturan" @click="closeMobileMenu">Aturan</a>
@@ -75,21 +118,22 @@ onUnmounted(() => {
   width: 100%;
   background: transparent;
   color: var(--white);
-  padding: 25px 5%;
+  padding: 14px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   position: fixed;
   top: 0;
+  left: 0;
   z-index: 1000;
   transition: var(--transition);
 }
 
-.navbar-scrolled {
+.navbar-scrolled,
+.navbar-menu-open {
   background: var(--glass-bg);
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
-  padding: 15px 5%;
   box-shadow: var(--shadow-md);
   color: var(--primary-color-dark);
 }
@@ -97,44 +141,86 @@ onUnmounted(() => {
 .logo-box {
   display: flex;
   align-items: center;
-  gap: 15px;
+  min-width: 0;
+  gap: 10px;
 }
 
 .logo-img {
-  width: 45px;
-  height: 45px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   object-fit: cover;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  flex: 0 0 auto;
 }
 
 .logo-text {
-  font-size: 20px;
+  font-size: clamp(14px, 4vw, 18px);
   font-weight: 700;
-  letter-spacing: 0.5px;
+  line-height: 1.2;
+  letter-spacing: 0.2px;
+  max-width: 190px;
 }
 
 .navbar hr { display: none; }
 
 .nav-links {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 16px;
+  right: 16px;
   display: flex;
-  gap: 30px;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 0;
+  padding: 0 10px;
+  overflow: hidden;
+  visibility: hidden;
+  opacity: 0;
+  color: var(--primary-color-dark);
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(0, 51, 127, 0.08);
+  border-radius: 18px;
+  box-shadow: var(--shadow-lg);
+  transition: max-height 0.35s ease, opacity 0.25s ease, visibility 0.25s ease, padding 0.25s ease;
 }
 
-.nav-links a {
+.nav-open {
+  max-height: min(72svh, 520px);
+  padding: 12px 10px;
+  overflow-y: auto;
+  visibility: visible;
+  opacity: 1;
+}
+
+.nav-links a,
+.dropdown-toggle {
+  width: 100%;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 11px 14px;
+  border-radius: 12px;
   text-decoration: none;
   color: inherit;
   font-size: 16px;
   font-weight: 600;
   position: relative;
   transition: var(--transition);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
 }
 
-.nav-links a:hover {
+.nav-links a:hover,
+.dropdown-toggle:hover {
   color: var(--accent-color);
+  background: rgba(0, 74, 173, 0.06);
 }
 
-.nav-links a::after {
+.nav-links a::after,
+.dropdown-toggle::after {
   content: "";
   position: absolute;
   width: 0%;
@@ -146,25 +232,28 @@ onUnmounted(() => {
   border-radius: 2px;
 }
 
-.nav-links a:hover::after {
+.nav-links a:hover::after,
+.dropdown-toggle:hover::after {
   width: 100%;
 }
 
-/* Dropdown CSS */
 .dropdown {
   position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
+  width: 100%;
 }
 
 .dropdown-toggle {
-  display: flex;
-  align-items: center;
   gap: 5px;
 }
 
 .caret {
-  font-size: 10px;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   transition: transform 0.3s ease;
 }
 
@@ -174,39 +263,22 @@ onUnmounted(() => {
 }
 
 .dropdown-menu {
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%) translateY(15px);
-  background: var(--white);
-  min-width: 180px;
-  border-radius: 8px;
-  box-shadow: var(--shadow-md);
-  padding: 10px 0;
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.3s ease;
-  z-index: 1002;
-}
-
-/* Show Dropdown on hover (desktop) or active state (mobile/click) */
-.dropdown:hover .dropdown-menu,
-.dropdown-active .dropdown-menu {
-  opacity: 1;
-  visibility: visible;
-  transform: translateX(-50%) translateY(5px);
+  display: none;
+  width: 100%;
+  padding: 4px 0 8px;
+  background: rgba(0, 74, 173, 0.05);
+  border-radius: 12px;
 }
 
 .dropdown-menu a {
-  display: block;
-  padding: 10px 20px;
+  padding: 10px 16px;
   color: var(--text-dark);
   font-weight: 500;
   transition: background 0.2s, color 0.2s;
 }
 
 .dropdown-menu a::after {
-  display: none; /* Hide hover underline in dropdown */
+  display: none;
 }
 
 .dropdown-menu a:hover {
@@ -215,13 +287,24 @@ onUnmounted(() => {
 }
 
 .hamburger {
-  display: none;
+  display: flex;
   background: none;
   border: none;
   cursor: pointer;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
   gap: 6px;
   z-index: 1001;
+  width: 44px;
+  height: 44px;
+  color: inherit;
+  border-radius: 999px;
+  transition: var(--transition);
+}
+
+.hamburger:hover {
+  background: rgba(255, 255, 255, 0.14);
 }
 
 .bar {
@@ -232,94 +315,111 @@ onUnmounted(() => {
   transition: var(--transition);
 }
 
-@media (max-width: 900px) {
+.dropdown-active .dropdown-menu {
+  display: flex;
+  flex-direction: column;
+}
+
+.bar-open-1 { transform: translateY(9px) rotate(45deg); }
+.bar-open-2 { opacity: 0; }
+.bar-open-3 { transform: translateY(-9px) rotate(-45deg); }
+
+@media (min-width: 901px) {
+  .navbar {
+    padding: 24px 5%;
+  }
+
+  .navbar-scrolled {
+    padding: 15px 5%;
+  }
+
+  .logo-box {
+    gap: 15px;
+  }
+
+  .logo-img {
+    width: 45px;
+    height: 45px;
+  }
+
+  .logo-text {
+    max-width: none;
+    font-size: 20px;
+    letter-spacing: 0.5px;
+  }
+
   .hamburger {
-    display: flex;
+    display: none;
   }
-  
+
   .nav-links {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    width: 100%;
-    background: var(--white);
-    flex-direction: column;
+    position: static;
+    flex-direction: row;
     align-items: center;
+    gap: 30px;
     padding: 0;
-    max-height: 0;
-    overflow: hidden;
-    color: var(--primary-color-dark);
-    box-shadow: var(--shadow-md);
-    transition: max-height 0.4s ease;
+    max-height: none;
+    overflow: visible;
+    visibility: visible;
+    opacity: 1;
+    color: inherit;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    transition: none;
   }
-  
-  .nav-open {
-    padding: 20px 0;
-    max-height: 500px; /* Increased for dropdown */
-    overflow-y: auto;
-  }
-  
-  /* Mobile Dropdown Adjustments */
-  .dropdown {
-    width: 100%;
-    flex-direction: column;
-    align-items: center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  }
-  
+
+  .nav-links a,
   .dropdown-toggle {
-    width: 100%;
-    justify-content: center;
-    padding: 15px 0;
+    width: auto;
+    min-height: auto;
+    padding: 0;
+    border-radius: 0;
+    font-size: 16px;
+  }
+
+  .nav-links a:hover,
+  .dropdown-toggle:hover {
+    background: transparent;
+  }
+
+  .dropdown {
+    width: auto;
+    flex-direction: row;
   }
 
   .dropdown-menu {
-    position: static;
-    transform: none !important;
-    box-shadow: none;
-    background: rgba(0, 0, 0, 0.03);
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(15px);
+    display: block;
+    background: var(--white);
+    min-width: 180px;
+    width: auto;
+    border-radius: 8px;
+    box-shadow: var(--shadow-md);
+    padding: 10px 0;
     opacity: 0;
     visibility: hidden;
-    display: none;
-    width: 100%;
-    padding: 0;
-    border-radius: 0;
-    transition: max-height 0.3s ease, opacity 0.3s ease;
-  }
-  
-  /* Override hover for mobile, only use active class */
-  .dropdown:hover .dropdown-menu {
-    display: none; /* Prevent accidental open on scroll */
-    opacity: 0;
-    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 1002;
   }
 
+  .dropdown:hover .dropdown-menu,
   .dropdown-active .dropdown-menu {
-    display: flex !important;
-    flex-direction: column;
-    opacity: 1 !important;
-    visibility: visible !important;
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(5px);
   }
 
   .dropdown-menu a {
-    text-align: center;
-    padding: 12px 0;
+    display: block;
+    min-height: auto;
+    padding: 10px 20px;
     font-size: 14px;
-    color: var(--primary-color-dark);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    text-align: left;
   }
-  
-  .dropdown-menu a:last-child {
-    border-bottom: none;
-  }
-  
-  .dropdown-menu a:hover {
-    background: rgba(0, 0, 0, 0.05);
-    color: var(--accent-color);
-  }
-  
-  .bar-open-1 { transform: translateY(9px) rotate(45deg); }
-  .bar-open-2 { opacity: 0; }
-  .bar-open-3 { transform: translateY(-9px) rotate(-45deg); }
 }
 </style>

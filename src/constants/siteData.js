@@ -3,12 +3,10 @@ import hero2 from '../assets/images/Foto_bersama_2.jpg';
 import hero3 from '../assets/images/asrama5_tampak_depan.jpg';
 
 import asrama1 from '../assets/images/asrama1_halaman_depan.jpg';
-import asrama2 from '../assets/images/asrama2_tampak_depan.jpg';
 import asrama3 from '../assets/images/asrama3_kamar.jpg';
 import asrama4 from '../assets/images/asrama4_ruang_belajar_asrama.jpg';
 
 import fotoKetua from '../assets/images/Rajak.jpeg';
-import fotoWakil from '../assets/images/Pahrio.jpeg';
 import fotoBendahara from '../assets/images/Taufik.jpeg';
 import fotoSekretaris from '../assets/images/Mulyadi.jpeg';
 
@@ -33,22 +31,22 @@ export const siteData = {
       {
         title: "Kamar Bersih",
         desc: "Kamar nyaman, wangi, dan cocok untuk istirahat maupun belajar.",
-        icon: "🛏️"
+        icon: "bed"
       },
       {
         title: "Wifi Gratis",
         desc: "Internet cepat yang mendukung pembelajaran online.",
-        icon: "📶"
+        icon: "wifi"
       },
       {
         title: "Kulkas",
-        desc: "Dibagian dapur sudah disediakan kulkas untuk menyimpan bahan makanan.",
-        icon: "❄️"
+        desc: "Di bagian dapur sudah disediakan kulkas untuk menyimpan bahan makanan.",
+        icon: "fridge"
       },
       {
         title: "Ruang Belajar",
         desc: "Ruang tenang dan nyaman untuk belajar bersama.",
-        icon: "📚"
+        icon: "book"
       }
     ]
   },
@@ -56,7 +54,6 @@ export const siteData = {
     title: "Galeri Asrama",
     items: [
       { src: asrama1, alt: "Asrama 1 Halaman Depan", caption: "Asrama 1 Halaman Depan" },
-      { src: asrama2, alt: "Asrama 2 Tampak Depan", caption: "Asrama 2 Tampak Depan" },
       { src: asrama3, alt: "Asrama 3 Kamar", caption: "Asrama 3 Kamar" },
       { src: asrama4, alt: "Asrama 4 Ruang Belajar Asrama", caption: "Asrama 4 Ruang Belajar Asrama" }
     ]
@@ -65,7 +62,6 @@ export const siteData = {
     title: "Pengurus Asrama",
     inti: [
       { jabatan: "Ketua", nama: "Rajak Jamali", foto: fotoKetua },
-      { jabatan: "Wakil Ketua", nama: "Pahrio Kasplyanor", foto: fotoWakil },
       { jabatan: "Bendahara", nama: "M. Taufik Rahman", foto: fotoBendahara },
       { jabatan: "Sekretaris", nama: "Mulyadi", foto: fotoSekretaris }
     ],
@@ -109,12 +105,15 @@ export const siteData = {
   },
   lokasi: {
     title: "Lokasi Asrama",
-    mapSrc: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3983.294823263951!2d114.596648!3d-3.2768797000000003!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2de423be03a8e67b%3A0x975da6669d385bb1!2sAsrama%20Putra%20Batola%20Handil%20Bakti!5e0!3m2!1sid!2sid!4v1764642755011!5m2!1sid!2sid"
+    mapSrc: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3983.294823263951!2d114.596648!3d-3.2768797000000003!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2de423be03a8e67b%3A0x975da6669d385bb1!2sAsrama%20Putra%20Batola%20Handil%20Bakti!5e0!3m2!1sid!2sid!4v1764642755011!5m2!1sid!2sid",
+    mapLink: "https://www.google.com/maps/search/?api=1&query=Asrama%20Putra%20Batola%20Handil%20Bakti"
   },
   kontak: {
     title: "Kontak",
     alamat: "Handil Bakti, Barito Kuala, Kalimantan Selatan",
-    telepon: ["0822-5178-7825", "0882-4628-4158"],
-    email: "asramaputrabatola@gmail.com"
+    telepon: ["+62 882-4628-4158"],
+    email: "asramaputrabatola@gmail.com",
+    whatsappLink: "https://wa.me/6288246284158",
+    daftarLink: "https://wa.me/6288246284158?text=saya%20mau%20mendaftar%20menjadi%20anggota%20asrama%20batola"
   }
 };

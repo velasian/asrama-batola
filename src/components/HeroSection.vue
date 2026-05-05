@@ -1,6 +1,7 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { siteData } from '../constants/siteData'
+import IconGraphic from './IconGraphic.vue'
 
 const currentSlide = ref(0)
 const totalSlides = siteData.hero.images.length
@@ -11,12 +12,36 @@ const nextSlide = () => {
   currentSlide.value = (currentSlide.value + 1) % totalSlides
 }
 
+const goToSlide = (index) => {
+  currentSlide.value = index
+}
+
+const closeRecruitmentModal = () => {
+  isRecruitmentModalOpen.value = false
+}
+
+const handleKeydown = (event) => {
+  if (event.key === 'Escape') {
+    closeRecruitmentModal()
+  }
+}
+
 onMounted(() => {
-  slideInterval = setInterval(nextSlide, 5000)
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  if (!reduceMotion) {
+    slideInterval = setInterval(nextSlide, 5000)
+  }
+  document.addEventListener('keydown', handleKeydown)
 })
 
 onUnmounted(() => {
   if (slideInterval) clearInterval(slideInterval)
+  document.removeEventListener('keydown', handleKeydown)
+  document.body.classList.remove('nav-locked')
+})
+
+watch(isRecruitmentModalOpen, (isOpen) => {
+  document.body.classList.toggle('nav-locked', isOpen)
 })
 </script>
 
@@ -28,6 +53,7 @@ onUnmounted(() => {
         v-for="(img, index) in siteData.hero.images" 
         :key="index"
         :class="['slide', { active: currentSlide === index }]"
+        :aria-hidden="currentSlide !== index"
         :style="{ backgroundImage: `url(${img})` }"
       ></div>
       <div class="overlay"></div>
@@ -45,18 +71,34 @@ onUnmounted(() => {
       >
         {{ siteData.hero.ctaText }}
       </button>
+
+      <div class="slider-dots" aria-label="Navigasi slide hero">
+        <button
+          v-for="(_, index) in siteData.hero.images"
+          :key="index"
+          type="button"
+          :class="['slider-dot', { active: currentSlide === index }]"
+          :aria-label="`Tampilkan slide ${index + 1}`"
+          :aria-current="currentSlide === index ? 'true' : 'false'"
+          @click="goToSlide(index)"
+        ></button>
+      </div>
     </div>
 
-    <!-- Recruitment Modal / Lightbox -->
     <Teleport to="body">
       <div 
         v-if="isRecruitmentModalOpen" 
         class="recruitment-modal" 
-        @click="isRecruitmentModalOpen = false"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Poster pendaftaran asrama"
+        @click="closeRecruitmentModal"
       >
         <div class="modal-content" @click.stop>
-          <button class="close-btn" @click="isRecruitmentModalOpen = false">&times;</button>
-          <img :src="siteData.hero.rekrutmenImage" alt="Open Recruitment Asrama" class="recruitment-img" />
+          <button class="close-btn" type="button" aria-label="Tutup poster pendaftaran" @click="closeRecruitmentModal">
+            <IconGraphic name="x" />
+          </button>
+          <img :src="siteData.hero.rekrutmenImage" alt="Poster open recruitment Asrama Putra Handil Bakti" class="recruitment-img" />
         </div>
       </div>
     </Teleport>
@@ -67,7 +109,7 @@ onUnmounted(() => {
 .hero-section {
   position: relative;
   width: 100%;
-  height: 100vh;
+  min-height: 78svh;
   overflow: hidden;
   background: var(--primary-color-dark);
 }
@@ -106,27 +148,31 @@ onUnmounted(() => {
 
 .hero-content {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   color: var(--white);
-  width: 90%;
-  max-width: 800px;
+  width: min(calc(100% - 32px), 820px);
+  margin: 0 auto;
+  padding: 92px 0 52px;
   z-index: 10;
 }
 
 .hero-content h1 {
-  font-size: 56px;
-  line-height: 1.2;
-  margin-bottom: 20px;
+  font-size: clamp(1.85rem, 8.4vw, 3.8rem);
+  line-height: 1.12;
+  margin-bottom: 14px;
   font-weight: 800;
   text-shadow: 0 4px 20px rgba(0,0,0,0.5);
 }
 
 .hero-content p {
-  font-size: 20px;
-  margin-bottom: 35px;
+  font-size: clamp(1rem, 4vw, 1.25rem);
+  max-width: 620px;
+  margin-bottom: 22px;
   font-weight: 400;
   opacity: 0.9;
   text-shadow: 0 2px 10px rgba(0,0,0,0.5);
@@ -134,15 +180,17 @@ onUnmounted(() => {
 
 .cta-btn {
   background: var(--accent-color);
-  color: var(--white);
-  padding: 15px 30px;
+  color: var(--text-dark);
+  min-height: 50px;
+  padding: 12px 24px;
   border-radius: 50px;
   text-decoration: none;
   font-weight: 600;
-  font-size: 18px;
+  font-size: 16px;
   transition: all 0.3s ease;
   border: none;
   cursor: pointer;
+  box-shadow: 0 12px 28px rgba(255, 204, 0, 0.28);
 }
 
 .cta-btn:hover {
@@ -151,42 +199,50 @@ onUnmounted(() => {
   box-shadow: 0 10px 20px rgba(0,0,0,0.2);
 }
 
-/* Fade-in-up animations */
-.fade-in-up {
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-}
-
-.fade-in-up.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
 .fade-in-up.delay-1 { transition-delay: 0.2s; }
 .fade-in-up.delay-2 { transition-delay: 0.4s; }
 
-/* Recruitment Modal Styles */
+.slider-dots {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.slider-dot {
+  width: 10px;
+  height: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.35);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.slider-dot.active {
+  width: 28px;
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+}
+
 .recruitment-modal {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.85); /* Dark overlay */
+  inset: 0;
+  min-height: 100svh;
+  background: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(8px);
   z-index: 9999;
   display: flex;
   align-items: center;
   justify-content: center;
   animation: fadeIn 0.3s ease;
-  padding: 20px;
+  padding: 16px;
 }
 
 .modal-content {
   position: relative;
-  max-width: 90vw;
-  max-height: 90vh;
+  width: min(92vw, 720px);
+  max-height: 90svh;
   background: var(--white);
   border-radius: 12px;
   overflow: hidden;
@@ -196,8 +252,8 @@ onUnmounted(() => {
 
 .recruitment-img {
   display: block;
-  max-width: 100%;
-  max-height: 90vh;
+  width: 100%;
+  max-height: 90svh;
   object-fit: contain;
 }
 
@@ -208,9 +264,9 @@ onUnmounted(() => {
   background: rgba(0, 0, 0, 0.5);
   color: white;
   border: none;
-  font-size: 28px;
-  width: 40px;
-  height: 40px;
+  font-size: 22px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -236,19 +292,28 @@ onUnmounted(() => {
   to { transform: scale(1); opacity: 1; }
 }
 
-@media (max-width: 768px) {
+@media (min-width: 768px) {
+  .hero-section {
+    min-height: 100svh;
+  }
+
+  .hero-content {
+    width: min(90%, 820px);
+    padding: 118px 0 64px;
+  }
+
   .hero-content h1 {
-    font-size: 36px;
+    margin-bottom: 20px;
   }
+
   .hero-content p {
-    font-size: 16px;
+    margin-bottom: 30px;
   }
-  .close-btn {
-    top: 10px;
-    right: 10px;
-    width: 35px;
-    height: 35px;
-    font-size: 24px;
+
+  .cta-btn {
+    font-size: 18px;
+    min-height: 50px;
+    padding: 14px 30px;
   }
 }
 </style>

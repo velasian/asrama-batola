@@ -1,20 +1,23 @@
 <script setup>
 import { siteData } from '../constants/siteData'
+import IconGraphic from './IconGraphic.vue'
 </script>
 
 <template>
   <section id="aturan" class="section aturan-section">
-    <div class="aturan-container glass-card fade-in-up visible">
+    <div class="aturan-container glass-card fade-in-up">
       <h2 class="section-title text-left">{{ siteData.aturan.title }}</h2>
       
       <ul class="rules-list">
         <li 
           v-for="(rule, index) in siteData.aturan.items" 
           :key="index"
-          class="fade-in-up visible"
+          class="fade-in-up"
           :style="`transition-delay: ${index * 0.1}s`"
         >
-          <span class="check-icon">✓</span>
+          <span class="check-icon">
+            <IconGraphic name="check" />
+          </span>
           <span class="rule-text">{{ rule }}</span>
         </li>
       </ul>
@@ -31,7 +34,7 @@ import { siteData } from '../constants/siteData'
 .aturan-container {
   max-width: 700px;
   width: 100%;
-  padding: 50px;
+  padding: 22px 16px;
   background: var(--white);
   border-top: 5px solid var(--primary-color);
 }
@@ -50,14 +53,14 @@ import { siteData } from '../constants/siteData'
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 10px;
 }
 
 .rules-list li {
   display: flex;
   align-items: flex-start;
-  gap: 15px;
-  padding: 15px 20px;
+  gap: 10px;
+  padding: 11px 12px;
   background: var(--bg-light);
   border-radius: 8px;
   transition: var(--transition);
@@ -74,27 +77,37 @@ import { siteData } from '../constants/siteData'
 .check-icon {
   color: var(--white);
   background: var(--primary-color);
-  width: 24px;
-  height: 24px;
-  min-width: 24px;
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: bold;
   margin-top: 2px;
 }
 
 .rule-text {
-  font-size: 16px;
+  font-size: 14px;
   color: var(--text-dark);
   font-weight: 500;
   line-height: 1.5;
 }
 
-@media (max-width: 768px) {
-  .aturan-container { padding: 30px 20px; }
-  .rules-list li { padding: 12px 15px; }
+@media (min-width: 768px) {
+  .aturan-container {
+    padding: 50px;
+  }
+
+  .rules-list li {
+    gap: 15px;
+    padding: 15px 20px;
+  }
+
+  .rule-text {
+    font-size: 16px;
+  }
 }
 </style>

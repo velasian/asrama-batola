@@ -1,20 +1,24 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
 
 :root {
   --primary-color: #004aad;
   --primary-color-hover: #005ff2;
   --primary-color-dark: #00337f;
   --accent-color: #ffcc00;
-  --bg-light: #f8fbff;
-  --text-dark: #222;
-  --text-light: #555;
+  --accent-color-dark: #e6b800;
+  --bg-light: #f4f8ff;
+  --bg-soft: #edf5ff;
+  --text-dark: #172033;
+  --text-light: #5b6473;
   --white: #ffffff;
-  --glass-bg: rgba(255, 255, 255, 0.85);
-  --glass-border: rgba(255, 255, 255, 0.18);
+  --glass-bg: rgba(255, 255, 255, 0.9);
+  --glass-border: rgba(255, 255, 255, 0.55);
   --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 10px 20px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 15px 35px rgba(0, 0, 0, 0.15);
   --border-radius: 12px;
+  --border-radius-lg: 24px;
+  --container-width: 1120px;
   --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
@@ -26,64 +30,79 @@
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 82px;
 }
 
 body {
   font-family: 'Poppins', sans-serif;
-  background-color: var(--bg-light);
+  background:
+    radial-gradient(circle at top left, rgba(0, 74, 173, 0.09), transparent 34rem),
+    linear-gradient(180deg, #ffffff 0%, var(--bg-light) 42%, #ffffff 100%);
   color: var(--text-dark);
   line-height: 1.6;
   overflow-x: hidden;
+  text-rendering: optimizeLegibility;
 }
 
-/* Global Section Styling */
+body.nav-locked,
+body.quick-modal-locked {
+  overflow: hidden;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+img,
+svg,
+iframe {
+  max-width: 100%;
+}
+
+.app-container {
+  min-height: 100svh;
+  padding-bottom: 74px;
+}
+
 .section {
-  padding: 80px 5%;
-  margin: 20px auto;
-  max-width: 1200px;
-}
-
-@media (max-width: 768px) {
-  .section {
-    padding: 60px 20px;
-    margin: 10px auto;
-  }
+  width: min(calc(100% - 28px), var(--container-width));
+  padding: 42px 0;
+  margin: 0 auto;
 }
 
 .section-title {
   text-align: center;
-  font-size: 36px;
+  font-size: clamp(1.45rem, 5.6vw, 2.35rem);
+  line-height: 1.18;
   font-weight: 700;
-  margin-bottom: 50px;
+  margin-bottom: 28px;
   color: var(--primary-color-dark);
   position: relative;
-}
-
-@media (max-width: 768px) {
-  .section-title {
-    font-size: 28px;
-    margin-bottom: 40px;
-  }
 }
 
 .section-title::after {
   content: '';
   position: absolute;
-  width: 60px;
+  width: 56px;
   height: 4px;
   background-color: var(--accent-color);
-  bottom: -15px;
+  bottom: -11px;
   left: 50%;
   transform: translateX(-50%);
   border-radius: 2px;
 }
 
-/* Global Button */
 .btn-primary {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: var(--accent-color);
   color: var(--text-dark);
-  padding: 14px 32px;
+  min-height: 48px;
+  padding: 13px 28px;
   font-size: 16px;
   font-weight: 600;
   border-radius: 50px;
@@ -100,11 +119,11 @@ body {
   background: #ffdb4d;
 }
 
-/* Animations */
 .fade-in-up {
   opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 0.8s ease, transform 0.8s ease;
+  transform: translateY(22px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+  will-change: opacity, transform;
 }
 
 .fade-in-up.visible {
@@ -112,7 +131,6 @@ body {
   transform: translateY(0);
 }
 
-/* Glass Card Reusable */
 .glass-card {
   background: var(--glass-bg);
   backdrop-filter: blur(10px);
@@ -123,7 +141,44 @@ body {
   transition: var(--transition);
 }
 
-.glass-card:hover {
-  box-shadow: var(--shadow-md);
-  transform: translateY(-5px);
+@media (hover: hover) {
+  .glass-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-5px);
+  }
+}
+
+@media (min-width: 768px) {
+  .app-container {
+    padding-bottom: 0;
+  }
+
+  .section {
+    width: min(calc(100% - 64px), var(--container-width));
+    padding: clamp(64px, 9vw, 92px) 0;
+  }
+
+  .section-title {
+    margin-bottom: clamp(2rem, 7vw, 3.25rem);
+  }
+
+  .section-title::after {
+    bottom: -15px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .fade-in-up {
+    opacity: 1;
+    transform: none;
+  }
 }

@@ -1,19 +1,22 @@
 <script setup>
 import { siteData } from '../constants/siteData'
+import IconGraphic from './IconGraphic.vue'
 </script>
 
 <template>
   <section id="fasilitas" class="section">
-    <h2 class="section-title fade-in-up visible">{{ siteData.fasilitas.title }}</h2>
+    <h2 class="section-title fade-in-up">{{ siteData.fasilitas.title }}</h2>
 
     <div class="card-container">
       <div 
         v-for="(item, index) in siteData.fasilitas.items" 
         :key="index"
-        class="card glass-card fade-in-up visible"
+        class="card glass-card fade-in-up"
         :style="`transition-delay: ${index * 0.15}s`"
       >
-        <div class="icon">{{ item.icon }}</div>
+        <div class="icon">
+          <IconGraphic :name="item.icon" />
+        </div>
         <h3>{{ item.title }}</h3>
         <p>{{ item.desc }}</p>
       </div>
@@ -24,13 +27,19 @@ import { siteData } from '../constants/siteData'
 <style scoped>
 .card-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 30px;
-  margin-top: 50px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 22px;
 }
 
 .card {
-  padding: 40px 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 142px;
+  padding: 14px 10px;
   text-align: center;
   position: relative;
   overflow: hidden;
@@ -49,14 +58,15 @@ import { siteData } from '../constants/siteData'
 }
 
 .icon {
-  font-size: 50px;
-  margin-bottom: 20px;
-  display: inline-block;
-  background: var(--bg-light);
-  width: 90px;
-  height: 90px;
-  line-height: 90px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
+  font-size: 25px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-light);
+  color: var(--primary-color);
   box-shadow: 0 4px 10px rgba(0,0,0,0.05);
   transition: var(--transition);
 }
@@ -67,15 +77,52 @@ import { siteData } from '../constants/siteData'
 }
 
 .card h3 {
-  font-size: 22px;
+  font-size: 14px;
+  line-height: 1.25;
   color: var(--primary-color-dark);
-  margin-bottom: 15px;
   font-weight: 700;
 }
 
 .card p {
   color: var(--text-light);
-  font-size: 15px;
-  line-height: 1.6;
+  display: -webkit-box;
+  font-size: 12px;
+  line-height: 1.45;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+@media (min-width: 960px) {
+  .card-container {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 24px;
+    margin-top: 48px;
+  }
+
+  .card {
+    display: block;
+    min-height: 0;
+    padding: 36px 24px;
+    text-align: center;
+  }
+
+  .icon {
+    font-size: 46px;
+    width: 86px;
+    height: 86px;
+    margin-bottom: 20px;
+  }
+
+  .card h3 {
+    font-size: 20px;
+    margin-bottom: 12px;
+  }
+
+  .card p {
+    display: block;
+    font-size: 15px;
+    overflow: visible;
+  }
 }
 </style>

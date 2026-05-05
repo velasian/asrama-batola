@@ -1,13 +1,35 @@
 <script setup>
+import { onMounted, onUnmounted, ref } from 'vue'
 import { siteData } from '../constants/siteData'
+
+const openDivisionIndex = ref(null)
+const isDesktop = ref(false)
+
+const toggleDivision = (index) => {
+  openDivisionIndex.value = openDivisionIndex.value === index ? null : index
+}
+
+const updateViewport = () => {
+  isDesktop.value = window.innerWidth >= 768
+}
+
+const isDivisionExpanded = (index) => isDesktop.value || openDivisionIndex.value === index
+
+onMounted(() => {
+  updateViewport()
+  window.addEventListener('resize', updateViewport)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateViewport)
+})
 </script>
 
 <template>
   <section id="pengurus" class="section pengurus-section">
-    <h2 class="section-title fade-in-up visible">{{ siteData.pengurus.title }}</h2>
+    <h2 class="section-title fade-in-up">{{ siteData.pengurus.title }}</h2>
 
-    <div class="pengurus-container fade-in-up visible">
-      <!-- Pengurus Inti -->
+    <div class="pengurus-container fade-in-up">
       <div class="inti-grid">
         <div 
           v-for="(person, index) in siteData.pengurus.inti" 
@@ -15,7 +37,14 @@ import { siteData } from '../constants/siteData'
           class="person-card glass-card"
         >
           <div class="avatar-container">
-            <img v-if="person.foto" :src="person.foto" :alt="person.nama" class="avatar-img" />
+            <img
+              v-if="person.foto"
+              :src="person.foto"
+              :alt="person.nama"
+              class="avatar-img"
+              loading="lazy"
+              decoding="async"
+            />
             <div v-else class="avatar-placeholder">{{ person.nama.charAt(0) }}</div>
           </div>
           <h4>{{ person.nama }}</h4>
@@ -23,19 +52,25 @@ import { siteData } from '../constants/siteData'
         </div>
       </div>
 
-      <!-- Divisi / Bidang -->
-      <h3 class="divisi-title fade-in-up visible">Koordinator & Divisi</h3>
+      <h3 class="divisi-title fade-in-up">Koordinator & Divisi</h3>
       <div class="divisi-grid">
-        <div 
+        <div
           v-for="(divisi, index) in siteData.pengurus.divisi" 
           :key="index"
-          class="divisi-card glass-card fade-in-up visible"
+          :class="['divisi-card glass-card fade-in-up', { 'divisi-open': isDivisionExpanded(index) }]"
           :style="`transition-delay: ${index * 0.1}s`"
         >
-          <div class="divisi-header">
-            <h4>Bidang {{ divisi.nama }}</h4>
-          </div>
-          <div class="divisi-body">
+          <button
+            type="button"
+            class="divisi-header"
+            :aria-expanded="isDivisionExpanded(index)"
+            :aria-controls="`divisi-body-${index}`"
+            @click="toggleDivision(index)"
+          >
+            <span>Bidang {{ divisi.nama }}</span>
+            <span class="divisi-caret" aria-hidden="true">+</span>
+          </button>
+          <div :id="`divisi-body-${index}`" class="divisi-body">
             <div class="co-person">
               <span class="role">CO (Koordinator)</span>
               <strong>{{ divisi.co }}</strong>
@@ -59,16 +94,14 @@ import { siteData } from '../constants/siteData'
 }
 
 .inti-grid {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 25px;
-  margin-bottom: 60px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 30px;
 }
 
 .person-card {
-  width: 200px;
-  padding: 30px 20px;
+  padding: 16px 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -77,10 +110,10 @@ import { siteData } from '../constants/siteData'
 }
 
 .avatar-container {
-  width: 90px;
-  height: 90px;
+  width: 62px;
+  height: 62px;
   border-radius: 50%;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
   box-shadow: var(--shadow-sm);
   border: 3px solid var(--white);
   overflow: hidden;
@@ -94,7 +127,7 @@ import { siteData } from '../constants/siteData'
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: top; /* Focus on face usually at top of portrait */
+  object-position: top;
 }
 
 .avatar-placeholder {
@@ -109,13 +142,14 @@ import { siteData } from '../constants/siteData'
 }
 
 .person-card h4 {
-  font-size: 16px;
+  font-size: 13px;
   color: var(--text-dark);
   margin-bottom: 5px;
+  line-height: 1.35;
 }
 
 .jabatan {
-  font-size: 13px;
+  font-size: 10.5px;
   color: var(--white);
   background: var(--primary-color-dark);
   padding: 4px 12px;
@@ -128,16 +162,16 @@ import { siteData } from '../constants/siteData'
 }
 
 .divisi-title {
-  font-size: 26px;
+  font-size: clamp(1.2rem, 5vw, 1.65rem);
   color: var(--primary-color-dark);
-  margin-bottom: 30px;
+  margin-bottom: 14px;
   text-align: center;
 }
 
 .divisi-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 25px;
+  grid-template-columns: 1fr;
+  gap: 16px;
 }
 
 .divisi-card {
@@ -151,18 +185,49 @@ import { siteData } from '../constants/siteData'
 .divisi-header {
   background: var(--primary-color);
   color: white;
-  padding: 15px 20px;
+  width: 100%;
+  min-height: 48px;
+  padding: 13px 16px;
+  border: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  text-align: left;
+  cursor: pointer;
 }
 
-.divisi-header h4 {
-  font-size: 16px;
+.divisi-header span:first-child {
+  font-size: 15px;
   font-weight: 600;
   letter-spacing: 0.5px;
 }
 
+.divisi-caret {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.16);
+  font-size: 18px;
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+
+.divisi-open .divisi-caret {
+  transform: rotate(45deg);
+}
+
 .divisi-body {
-  padding: 20px;
+  display: none;
+  padding: 14px 16px 16px;
   flex-grow: 1;
+}
+
+.divisi-open .divisi-body {
+  display: block;
 }
 
 .role {
@@ -175,13 +240,13 @@ import { siteData } from '../constants/siteData'
 }
 
 .co-person {
-  margin-bottom: 15px;
-  padding-bottom: 15px;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
   border-bottom: 1px dashed rgba(0,0,0,0.1);
 }
 
 .co-person strong {
-  font-size: 16px;
+  font-size: 15px;
   color: var(--primary-color-dark);
 }
 
@@ -206,19 +271,61 @@ import { siteData } from '../constants/siteData'
   font-size: 18px;
 }
 
-@media (max-width: 768px) {
-  .inti-grid { gap: 10px; margin-bottom: 40px; }
-  .person-card { 
-    width: calc(50% - 10px); 
-    padding: 15px 10px; 
-    border-top: 3px solid var(--accent-color);
+@media (min-width: 640px) {
+  .inti-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 20px;
   }
-  .avatar-container { width: 60px; height: 60px; margin-bottom: 10px; }
-  .avatar-placeholder { font-size: 20px; }
-  .person-card h4 { font-size: 14px; text-align: center; }
-  .jabatan { font-size: 11px; padding: 3px 8px; }
-  
-  .divisi-title { font-size: 22px; margin-bottom: 20px; }
-  .divisi-grid { grid-template-columns: 1fr; gap: 15px; }
+}
+
+@media (min-width: 768px) {
+  .inti-grid {
+    margin-bottom: 60px;
+  }
+
+  .person-card {
+    padding: 30px 20px;
+  }
+
+  .avatar-container {
+    width: 90px;
+    height: 90px;
+  }
+
+  .person-card h4 {
+    font-size: 16px;
+  }
+
+  .jabatan {
+    font-size: 13px;
+  }
+
+  .divisi-title {
+    margin-bottom: 24px;
+  }
+
+  .divisi-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 25px;
+  }
+
+  .divisi-header {
+    min-height: auto;
+    padding: 15px 20px;
+    cursor: default;
+  }
+
+  .divisi-header span:first-child {
+    font-size: 16px;
+  }
+
+  .divisi-caret {
+    display: none;
+  }
+
+  .divisi-body {
+    display: block;
+    padding: 20px;
+  }
 }
 </style>
