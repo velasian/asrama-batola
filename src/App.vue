@@ -36,27 +36,38 @@ const handleQuickModalKeydown = (event) => {
 onMounted(() => {
   document.addEventListener('keydown', handleQuickModalKeydown)
   const animatedElements = document.querySelectorAll('.fade-in-up')
-
-  if (!('IntersectionObserver' in window)) {
+  const revealAnimatedElements = () => {
     animatedElements.forEach(el => el.classList.add('visible'))
+  }
+
+  const shouldSkipScrollAnimation = window.matchMedia(
+    '(max-width: 767px), (prefers-reduced-motion: reduce)'
+  ).matches
+
+  if (shouldSkipScrollAnimation || !('IntersectionObserver' in window)) {
+    revealAnimatedElements()
     return
   }
 
-  observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible')
-        observer.unobserve(entry.target)
-      }
+  try {
+    observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible')
+          observer.unobserve(entry.target)
+        }
+      })
+    }, {
+      threshold: 0.1,
+      rootMargin: '0px 0px -24px 0px'
     })
-  }, {
-    threshold: 0.14,
-    rootMargin: '0px 0px -40px 0px'
-  })
 
-  animatedElements.forEach(el => {
-    observer.observe(el)
-  })
+    animatedElements.forEach(el => {
+      observer.observe(el)
+    })
+  } catch {
+    revealAnimatedElements()
+  }
 })
 
 onUnmounted(() => {
@@ -301,6 +312,7 @@ watch(quickModal, (modalName) => {
 
 .quick-modal-map-card {
   width: min(100%, 560px);
+  height: min(78vh, 560px);
   height: min(78svh, 560px);
   padding: 16px;
   display: grid;

@@ -216,6 +216,7 @@ onUnmounted(() => {
 .modal-content {
   position: relative;
   max-width: 92vw;
+  max-height: 90vh;
   max-height: 90svh;
   transform: scale(0.95);
   transition: transform 0.3s ease;
@@ -227,6 +228,7 @@ onUnmounted(() => {
 
 .modal-content img {
   max-width: 100%;
+  max-height: 90vh;
   max-height: 90svh;
   object-fit: contain;
   border-radius: 8px;

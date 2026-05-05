@@ -7,6 +7,10 @@ const currentSlide = ref(0)
 const totalSlides = siteData.hero.images.length
 let slideInterval = null
 const isRecruitmentModalOpen = ref(false)
+const prefersStaticHero = () => typeof window !== 'undefined' && window.matchMedia(
+  '(max-width: 767px), (prefers-reduced-motion: reduce), (prefers-reduced-data: reduce)'
+).matches
+const shouldUseStaticHero = ref(prefersStaticHero())
 
 const nextSlide = () => {
   currentSlide.value = (currentSlide.value + 1) % totalSlides
@@ -15,6 +19,8 @@ const nextSlide = () => {
 const goToSlide = (index) => {
   currentSlide.value = index
 }
+
+const shouldLoadSlideImage = (index) => !shouldUseStaticHero.value || currentSlide.value === index
 
 const closeRecruitmentModal = () => {
   isRecruitmentModalOpen.value = false
@@ -27,8 +33,8 @@ const handleKeydown = (event) => {
 }
 
 onMounted(() => {
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  if (!reduceMotion) {
+  shouldUseStaticHero.value = prefersStaticHero()
+  if (!shouldUseStaticHero.value) {
     slideInterval = setInterval(nextSlide, 5000)
   }
   document.addEventListener('keydown', handleKeydown)
@@ -54,7 +60,7 @@ watch(isRecruitmentModalOpen, (isOpen) => {
         :key="index"
         :class="['slide', { active: currentSlide === index }]"
         :aria-hidden="currentSlide !== index"
-        :style="{ backgroundImage: `url(${img})` }"
+        :style="shouldLoadSlideImage(index) ? { backgroundImage: `url(${img})` } : undefined"
       ></div>
       <div class="overlay"></div>
     </div>
@@ -109,6 +115,7 @@ watch(isRecruitmentModalOpen, (isOpen) => {
 .hero-section {
   position: relative;
   width: 100%;
+  min-height: 78vh;
   min-height: 78svh;
   overflow: hidden;
   background: var(--primary-color-dark);
@@ -228,6 +235,7 @@ watch(isRecruitmentModalOpen, (isOpen) => {
 .recruitment-modal {
   position: fixed;
   inset: 0;
+  min-height: 100vh;
   min-height: 100svh;
   background: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(8px);
@@ -242,6 +250,7 @@ watch(isRecruitmentModalOpen, (isOpen) => {
 .modal-content {
   position: relative;
   width: min(92vw, 720px);
+  max-height: 90vh;
   max-height: 90svh;
   background: var(--white);
   border-radius: 12px;
@@ -253,6 +262,7 @@ watch(isRecruitmentModalOpen, (isOpen) => {
 .recruitment-img {
   display: block;
   width: 100%;
+  max-height: 90vh;
   max-height: 90svh;
   object-fit: contain;
 }
@@ -294,6 +304,7 @@ watch(isRecruitmentModalOpen, (isOpen) => {
 
 @media (min-width: 768px) {
   .hero-section {
+    min-height: 100vh;
     min-height: 100svh;
   }
 

@@ -186,6 +186,7 @@ watch(isMobileMenuOpen, (isOpen) => {
 }
 
 .nav-open {
+  max-height: min(72vh, 520px);
   max-height: min(72svh, 520px);
   padding: 12px 10px;
   overflow-y: auto;

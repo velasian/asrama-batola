@@ -1,28 +1,5 @@
 <script setup>
-import { onMounted, onUnmounted, ref } from 'vue'
 import { siteData } from '../constants/siteData'
-
-const openDivisionIndex = ref(null)
-const isDesktop = ref(false)
-
-const toggleDivision = (index) => {
-  openDivisionIndex.value = openDivisionIndex.value === index ? null : index
-}
-
-const updateViewport = () => {
-  isDesktop.value = window.innerWidth >= 768
-}
-
-const isDivisionExpanded = (index) => isDesktop.value || openDivisionIndex.value === index
-
-onMounted(() => {
-  updateViewport()
-  window.addEventListener('resize', updateViewport)
-})
-
-onUnmounted(() => {
-  window.removeEventListener('resize', updateViewport)
-})
 </script>
 
 <template>
@@ -54,22 +31,17 @@ onUnmounted(() => {
 
       <h3 class="divisi-title fade-in-up">Koordinator & Divisi</h3>
       <div class="divisi-grid">
-        <div
+        <details
           v-for="(divisi, index) in siteData.pengurus.divisi" 
           :key="index"
-          :class="['divisi-card glass-card fade-in-up', { 'divisi-open': isDivisionExpanded(index) }]"
+          name="pengurus-divisi"
+          class="divisi-card glass-card fade-in-up"
           :style="`transition-delay: ${index * 0.1}s`"
         >
-          <button
-            type="button"
-            class="divisi-header"
-            :aria-expanded="isDivisionExpanded(index)"
-            :aria-controls="`divisi-body-${index}`"
-            @click="toggleDivision(index)"
-          >
-            <span>Bidang {{ divisi.nama }}</span>
+          <summary class="divisi-header">
+            <span class="divisi-name">Bidang {{ divisi.nama }}</span>
             <span class="divisi-caret" aria-hidden="true">+</span>
-          </button>
+          </summary>
           <div :id="`divisi-body-${index}`" class="divisi-body">
             <div class="co-person">
               <span class="role">CO (Koordinator)</span>
@@ -82,7 +54,7 @@ onUnmounted(() => {
               </ul>
             </div>
           </div>
-        </div>
+        </details>
       </div>
     </div>
   </section>
@@ -178,8 +150,7 @@ onUnmounted(() => {
   background: var(--white);
   overflow: hidden;
   text-align: left;
-  display: flex;
-  flex-direction: column;
+  display: block;
 }
 
 .divisi-header {
@@ -188,19 +159,25 @@ onUnmounted(() => {
   width: 100%;
   min-height: 48px;
   padding: 13px 16px;
-  border: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   text-align: left;
   cursor: pointer;
+  list-style: none;
+  user-select: none;
 }
 
-.divisi-header span:first-child {
+.divisi-header::-webkit-details-marker {
+  display: none;
+}
+
+.divisi-name {
   font-size: 15px;
   font-weight: 600;
   letter-spacing: 0.5px;
+  line-height: 1;
 }
 
 .divisi-caret {
@@ -210,24 +187,20 @@ onUnmounted(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex: 0 0 24px;
   background: rgba(255, 255, 255, 0.16);
   font-size: 18px;
   line-height: 1;
   transition: transform 0.2s ease;
 }
 
-.divisi-open .divisi-caret {
+.divisi-card[open] .divisi-caret {
   transform: rotate(45deg);
 }
 
 .divisi-body {
-  display: none;
   padding: 14px 16px 16px;
   flex-grow: 1;
-}
-
-.divisi-open .divisi-body {
-  display: block;
 }
 
 .role {
@@ -312,19 +285,13 @@ onUnmounted(() => {
   .divisi-header {
     min-height: auto;
     padding: 15px 20px;
-    cursor: default;
   }
 
-  .divisi-header span:first-child {
+  .divisi-name {
     font-size: 16px;
   }
 
-  .divisi-caret {
-    display: none;
-  }
-
   .divisi-body {
-    display: block;
     padding: 20px;
   }
 }
